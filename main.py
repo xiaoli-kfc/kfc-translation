@@ -1,15 +1,36 @@
 import discord
 import deepl
 import os
-from keep_alive import keep_alive
+from flask import Flask
+from threading import Thread
 
 # ==========================================
-# ▼ 設定（ReplitのSecretsから読み込みます） ▼
+# ▼ 24時間稼働用の設定（ここを追加しました） ▼
 # ==========================================
-DEEPL_API_KEY = os.environ['DEEPL_API_KEY']
-DISCORD_BOT_TOKEN = os.environ['DISCORD_BOT_TOKEN']
+app = Flask('')
 
-# チャンネル設定（ご自身のIDを入れてください）
+@app.route('/')
+def home():
+    return "I am alive"
+
+def run():
+    app.run(host='0.0.0.0', port=8080)
+
+def keep_alive():
+    t = Thread(target=run)
+    t.start()
+# ==========================================
+
+
+# ==========================================
+# ▼ ボットの設定 ▼
+# ==========================================
+
+# Renderの環境変数からキーを取得
+DEEPL_API_KEY = os.environ.get('DEEPL_API_KEY')
+DISCORD_BOT_TOKEN = os.environ.get('DISCORD_BOT_TOKEN')
+
+# チャンネル設定
 CHANNEL_MAP = {
     # === サーバーAの設定 ===
     1449657975156375642: "JA",     # 日本語部屋のID
@@ -19,6 +40,7 @@ CHANNEL_MAP = {
     1449658465298681897: "RU",     # ロシア語（追加！）
     1449658345677131786: "ES",     # スペイン語（追加！）
 }
+
 # ==========================================
 
 intents = discord.Intents.default()
@@ -50,7 +72,6 @@ async def on_message(message):
 
         try:
             channel = client.get_channel(target_channel_id)
-            # 混信防止（同じサーバー内のみ送信）
             if not channel or channel.guild.id != message.guild.id:
                 continue
 
@@ -65,8 +86,8 @@ async def on_message(message):
         except Exception as e:
             print(f"エラー: {e}")
 
-# 目覚まし用サーバー起動
+# 目覚まし機能を起動
 keep_alive()
 
-# ボット起動
+# ボットを起動
 client.run(DISCORD_BOT_TOKEN)
