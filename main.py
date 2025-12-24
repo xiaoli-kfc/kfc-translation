@@ -32,12 +32,17 @@ DISCORD_BOT_TOKEN = os.environ.get('DISCORD_BOT_TOKEN')
 
 # チャンネル設定
 CHANNEL_MAP = {
-    # === サーバーAの設定 ===
+    # === KFC-Discordの設定 ===
     1449657975156375642: "JA",     # 日本語部屋のID
     1449658053409640549: "EN-US",  # 英語部屋のID (米国英語)
     1449658202445578420: "KO",     # 韓国語部屋のID
     1449658106115264634: "ZH",     # 中国語部屋のID
     1449658465298681897: "RU",     # ロシア語（追加！）
+    # === シーズン用の設定 ===
+    1449421788374368367: "JA",     # 日本語部屋のID
+    1449421871593423031: "EN-US",  # 英語部屋のID (米国英語)
+    1449422067547111525: "KO",     # 韓国語部屋のID
+    1449421823178707075: "ZH",     # 中国語部屋のID
 }
 
 # ==========================================
@@ -56,6 +61,12 @@ async def on_message(message):
     if message.author.bot: return
     if message.channel.id not in CHANNEL_MAP: return
 
+    # === ここに追加 ===
+    if message.content == "!usage":
+        usage = translator.get_usage()
+        await message.channel.send(f"📊 今月の使用量: {usage.character.count:,} / {usage.character.limit:,} 文字")
+        return
+    # =================
     # 画像URL取得
     image_urls = ""
     if message.attachments:
@@ -90,4 +101,5 @@ keep_alive()
 
 # ボットを起動
 client.run(DISCORD_BOT_TOKEN)
+
 
