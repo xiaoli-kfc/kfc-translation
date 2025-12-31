@@ -30,7 +30,7 @@ DISCORD_BOT_TOKEN = os.environ.get("DISCORD_BOT_TOKEN")
 # { guild_id: { channel_id: target_lang } }
 CHANNEL_MAP = {
     # ===== サーバーA =====
-    111111111111111111: {   # ← 実際の Guild ID
+    1246838428641919120: {   # ← 実際の Guild ID
         1449657975156375642: "JA",
         1449658053409640549: "EN-US",
         1449658202445578420: "KO",
@@ -39,7 +39,7 @@ CHANNEL_MAP = {
     },
 
     # ===== サーバーB =====
-    222222222222222222: {
+    1301954897620635719: {
         1449421788374368367: "JA",
         1449421871593423031: "EN-US",
         1449422067547111525: "KO",
@@ -166,3 +166,4 @@ try:
     client.run(DISCORD_BOT_TOKEN)
 except Exception as e:
     print(f"起動エラー: {e}", flush=True)
+
