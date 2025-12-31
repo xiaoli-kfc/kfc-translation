@@ -83,11 +83,11 @@ def translate_with_retry(text, target_lang, retries=3, delay=1):
 # ==========================================
 @client.event
 async def on_message(message):
-    # ① Bot / Webhook 無視
+    # ① Botの投稿は無視
     if message.author.bot:
         return
 
-    # ② 翻訳済み無視
+    # ② 翻訳済みは無視
     if message.content.startswith("[TL]"):
         return
 
@@ -101,6 +101,7 @@ async def on_message(message):
 
     guild_channels = CHANNEL_MAP[guild_id]
 
+    # 投稿チャンネルが対象外なら無視
     if message.channel.id not in guild_channels:
         return
 
@@ -110,28 +111,16 @@ async def on_message(message):
     if not original_text and not image_urls:
         return
 
+    # ★ 翻訳元言語は「投稿チャンネルの言語」
+    source_lang = guild_channels[message.channel.id]
+
     print(
         f"受信: {original_text} "
-        f"(Guild: {guild_id}, Channel: {message.channel.id})",
+        f"(Guild: {guild_id}, Channel: {message.channel.id}, Lang: {source_lang})",
         flush=True
     )
 
-    # ======================================
-    # ▼ 翻訳元言語 自動判定
-    # ======================================
-    try:
-        detected = translator.translate_text(
-            original_text,
-            target_lang="EN-US"
-        )
-        source_lang = detected.detected_source_lang
-    except Exception as e:
-        print(f"言語判定失敗: {e}", flush=True)
-        source_lang = None
-
-    # ======================================
-    # ▼ 各チャンネルへ翻訳送信
-    # ======================================
+    # 翻訳して他チャンネルへ送信
     for target_channel_id, target_lang in guild_channels.items():
         if target_channel_id == message.channel.id:
             continue
@@ -166,4 +155,5 @@ try:
     client.run(DISCORD_BOT_TOKEN)
 except Exception as e:
     print(f"起動エラー: {e}", flush=True)
+
 
