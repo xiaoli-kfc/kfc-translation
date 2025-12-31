@@ -14,14 +14,11 @@ def home():
     return "I am alive"
 
 def run():
-    # 【修正1】Renderが指定するポート番号を受け取るように変更
     app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 8080)))
 
 def keep_alive():
     t = Thread(target=run)
     t.start()
-# ==========================================
-
 
 # ==========================================
 # ▼ ボットの設定 ▼
@@ -36,13 +33,13 @@ CHANNEL_MAP = {
     1449657975156375642: "JA",      # 日本語
     1449658053409640549: "EN-US",   # 英語 (米国)
     1449658202445578420: "KO",      # 韓国語
-    1449658106115264634: "ZH-HANS", # 【修正2】中国語（簡体字に変更）
+    1449658106115264634: "ZH-HANS", # 中国語（簡体字）
     1455205802771087410: "VI",      # ベトナム語
     # === シーズン用の設定 ===
     1449421788374368367: "JA",      
     1449421871593423031: "EN-US",   
     1449422067547111525: "KO",      
-    1449421823178707075: "ZH-HANS", # 【修正2】中国語（簡体字に変更）
+    1449421823178707075: "ZH-HANS", # 中国語（簡体字）
 }
 
 # ==========================================
@@ -54,26 +51,20 @@ translator = deepl.Translator(DEEPL_API_KEY)
 
 @client.event
 async def on_ready():
-    print(f'ログインしました: {client.user}')
+    print(f'=== ログイン成功: {client.user} ===')
 
 @client.event
 async def on_message(message):
-    # ▼ 追加：メッセージが届いているかログに出す
+    # ▼ 診断用ログ：メッセージ受信確認
     print(f"受信: {message.content} (チャンネルID: {message.channel.id})")
 
     if message.author.bot:
         return
-    
-    # ▼ 追加：チャンネル判定で弾かれているか確認
+
+    # ▼ 診断用ログ：対象外チャンネルの確認
     if message.channel.id not in CHANNEL_MAP:
         print(f"対象外のチャンネルのため無視します: {message.channel.id}")
         return
-
-    # ... (以下、元のコード) ...
-@client.event
-async def on_message(message):
-    if message.author.bot: return
-    if message.channel.id not in CHANNEL_MAP: return
 
     # === 使用量確認コマンド ===
     if message.content == "!usage":
@@ -83,7 +74,6 @@ async def on_message(message):
         except Exception as e:
             await message.channel.send(f"使用量の取得に失敗しました: {e}")
         return
-    # =================
 
     # 画像URL取得
     image_urls = ""
@@ -92,22 +82,21 @@ async def on_message(message):
             image_urls += f"\n{attachment.url}"
 
     original_text = message.content
-    if not original_text and not image_urls: return
+    if not original_text and not image_urls:
+        return
 
     # 送信先を探す
     for target_channel_id, target_lang in CHANNEL_MAP.items():
-        # 自分自身のチャンネルには送らない
-        if target_channel_id == message.channel.id: continue
+        if target_channel_id == message.channel.id:
+            continue
 
         try:
             channel = client.get_channel(target_channel_id)
-            # 同じサーバー（ギルド）内のチャンネルか確認
             if not channel or channel.guild.id != message.guild.id:
                 continue
 
             translated_text = ""
             if original_text:
-                # テキストがある場合のみ翻訳
                 result = translator.translate_text(original_text, target_lang=target_lang)
                 translated_text = result.text
             
@@ -115,11 +104,25 @@ async def on_message(message):
             await channel.send(final_message)
 
         except Exception as e:
-            print(f"エラー: {e}")
+            print(f"翻訳送信エラー: {e}")
+
+# ==========================================
+# ▼ 診断付き起動シーケンス ▼
+# ==========================================
 
 # 目覚まし機能を起動
 keep_alive()
 
-# ボットを起動
-client.run(DISCORD_BOT_TOKEN)
+print("=== 診断開始 ===")
 
+if DISCORD_BOT_TOKEN is None:
+    print("【重大エラー】Tokenが読み込めていません！RenderのEnvironment Variablesの設定を確認してください。")
+elif len(DISCORD_BOT_TOKEN) < 50:
+    print(f"【警告】Tokenが短すぎます（{len(DISCORD_BOT_TOKEN)}文字）。コピペミスの可能性があります。")
+else:
+    print("Tokenは正常に読み込まれています。ログインを試行します...")
+
+try:
+    client.run(DISCORD_BOT_TOKEN)
+except Exception as e:
+    print(f"【起動エラー発生】: {e}")
