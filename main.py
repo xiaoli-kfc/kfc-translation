@@ -58,6 +58,20 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
+    # ▼ 追加：メッセージが届いているかログに出す
+    print(f"受信: {message.content} (チャンネルID: {message.channel.id})")
+
+    if message.author.bot:
+        return
+    
+    # ▼ 追加：チャンネル判定で弾かれているか確認
+    if message.channel.id not in CHANNEL_MAP:
+        print(f"対象外のチャンネルのため無視します: {message.channel.id}")
+        return
+
+    # ... (以下、元のコード) ...
+@client.event
+async def on_message(message):
     if message.author.bot: return
     if message.channel.id not in CHANNEL_MAP: return
 
@@ -108,3 +122,4 @@ keep_alive()
 
 # ボットを起動
 client.run(DISCORD_BOT_TOKEN)
+
