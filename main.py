@@ -107,22 +107,29 @@ async def on_message(message):
             print(f"翻訳送信エラー: {e}")
 
 # ==========================================
-# ▼ 診断付き起動シーケンス ▼
+# ▼ 診断付き起動シーケンス (修正版) ▼
 # ==========================================
 
-# 目覚まし機能を起動
+print("=== 診断開始 ===", flush=True)
+
+# 1. トークンのチェック（Webサーバー起動前に実行）
+if DISCORD_BOT_TOKEN is None:
+    print("【重大エラー】Tokenが読み込めていません！RenderのEnvironment Variablesの設定を確認してください。", flush=True)
+elif len(DISCORD_BOT_TOKEN) < 50:
+    print(f"【警告】Tokenが短すぎます（{len(DISCORD_BOT_TOKEN)}文字）。コピペミスの可能性があります。", flush=True)
+else:
+    print("Tokenは正常に読み込まれています。", flush=True)
+
+# 2. 目覚まし機能（Webサーバー）を起動
+# ※ 診断が終わってからWebサーバーを動かします
+print("Webサーバーを起動します...", flush=True)
 keep_alive()
 
-print("=== 診断開始 ===")
-
-if DISCORD_BOT_TOKEN is None:
-    print("【重大エラー】Tokenが読み込めていません！RenderのEnvironment Variablesの設定を確認してください。")
-elif len(DISCORD_BOT_TOKEN) < 50:
-    print(f"【警告】Tokenが短すぎます（{len(DISCORD_BOT_TOKEN)}文字）。コピペミスの可能性があります。")
-else:
-    print("Tokenは正常に読み込まれています。ログインを試行します...")
+# 3. Botのログイン試行
+print("Botのログインを試行します...", flush=True)
 
 try:
     client.run(DISCORD_BOT_TOKEN)
 except Exception as e:
-    print(f"【起動エラー発生】: {e}")
+    # エラー内容を強制表示
+    print(f"【起動エラー発生】: {e}", flush=True)
